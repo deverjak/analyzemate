@@ -1,7 +1,7 @@
 classdef MatlabLinter < analyzemate.staticanalysis.ICodeLinter
 
     properties
-        LinterInformation struct 
+        LinterInformation struct
         CodeComplexity table
     end
 
@@ -27,15 +27,27 @@ classdef MatlabLinter < analyzemate.staticanalysis.ICodeLinter
         end
         function parseCyclomaticComplexityFromMessages(obj)
             for i=1:length(obj.LinterInformation)
-                functionName = string(extractBetween(obj.LinterInformation(i).message, "'", "'"));
+                functionName = parseFunctionName(obj, i);
+                complexityValue = parseComplexityValue(obj, i);
 
-                words = split(obj.LinterInformation(i).message);
-                complexityValue = str2double(replace(words(end), '.', ''));
                 obj.CodeComplexity = [obj.CodeComplexity; table(functionName, complexityValue)];
             end
             if height(obj.CodeComplexity) > 0
                 obj.CodeComplexity.Properties.VariableNames = {'FunctionName', 'CyclomaticComplexity'};
             end
+        end
+        function functionName = parseFunctionName(obj, index)
+            functionName = string(extractBetween(obj.LinterInformation(index).message, "'", "'"));
+            if isempty(functionName)
+                functionName = string(extractBetween(obj.LinterInformation(index).message, '"', '"'));
+            end
+            if isempty(functionName)
+                functionName = strcat("Unparsable name (at line ", num2str(obj.LinterInformation(index).line), ")");
+            end
+        end
+        function complexityValue = parseComplexityValue(obj, index)
+            words = split(obj.LinterInformation(index).message);
+            complexityValue = str2double(replace(words(end), '.', ''));
         end
     end
 end

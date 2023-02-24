@@ -18,16 +18,30 @@ classdef MatlabLinterTest < matlab.unittest.TestCase & ...
                 ["testFun"; "testFoo"]);
             testCase.verifyEqual(testCase.CodeComplexity.CyclomaticComplexity, [3; 5]);
         end
+        function checkCodeComplexityOfSimpleFunctionWithinQuotes_shouldBeOne(testCase)
+            testCase.analyze('oneitemstructwithinquotes');
+            testCase.verifyEqual(testCase.CodeComplexity(1,1).Variables, "testFun");
+            testCase.verifyEqual(testCase.CodeComplexity(1,2).Variables, 1);
+        end
+        function checkCodeComplexityOfFunctionWithUnparsableName_shouldBeOne(testCase)
+            testCase.analyze('structwithunparsablename');
+            testCase.verifyEqual(testCase.CodeComplexity(1,1).Variables, "Unparsable name (at line 1)");
+            testCase.verifyEqual(testCase.CodeComplexity(1,2).Variables, 1);
+        end
     end
 
     methods (Access = protected)
         function runStaticAnalysis(testCase, file)
             if isequal(file, 'oneitemstruct')
                 testCase.createStubStructureWithOneItem();
+            elseif isequal(file, 'oneitemstructwithinquotes')
+                testCase.createStubStructureWithOneItemWithinQuotes();
             elseif isequal(file, 'twoitemstruct')
                 testCase.createStubStructureWithTwoItems();
-            else
+            elseif isequal(file, 'classlikestruct')
                 testCase.createStubStructureWithTWoFunctionsLikeClass();
+            else 
+                testCase.createStubStructureWithOneAnonymousFunction();
             end
         end
     end
@@ -39,6 +53,18 @@ classdef MatlabLinterTest < matlab.unittest.TestCase & ...
                 'fix', 0,'line', [], 'column', []);
         end
 
+        function createStubStructureWithOneItemWithinQuotes(testCase)
+            testCase.LinterInformation = struct('id', 'MCABE', 'message', ...
+                'The modified cyclomatic complexity of "testFun" is 1.', ...
+                'fix', 0,'line', [], 'column', []);
+        end
+        
+        function createStubStructureWithOneAnonymousFunction(testCase)
+            testCase.LinterInformation = struct('id', 'MCABE', 'message', ...
+                'The modified cyclomatic complexity of anonymous function is 1.', ...
+                'fix', 0,'line', 1, 'column', []);
+        end
+            
         function createStubStructureWithTwoItems(testCase)
             testCase.LinterInformation = struct('id', 'MCABE', 'message', ...
                 'The modified cyclomatic complexity of ''testBar'' is 2.', ...

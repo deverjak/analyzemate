@@ -1,7 +1,7 @@
 classdef (Abstract) ICodeLinter < handle
     
     methods (Abstract)
-        analyze(obj, file)
+        informStruct = anylyzeCode(obj, file)
     end
 end
 

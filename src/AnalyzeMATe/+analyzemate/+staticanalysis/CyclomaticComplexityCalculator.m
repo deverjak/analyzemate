@@ -3,7 +3,8 @@ classdef CyclomaticComplexityCalculator < handle
     %   Detailed explanation goes here
 
     properties (Access = private)
-        CodeLinter
+        CodeLinter (1,1) analyzemate.staticanalysis.ICodeLinter ...
+            = analyzemate.staticanalysis.MatlabLinter
         LinterInformation struct
     end
 
